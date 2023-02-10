@@ -1,8 +1,34 @@
-# Logstash Plugin
+# Logstash Splunk Raw Output Plugin
 
 This is a plugin for [Logstash](https://github.com/elastic/logstash).
 
+The ```splunk-raw``` plugin outputs logs in raw format to Splunk HEC (HTTP Event Collector). This plugin sends logs to a specified HEC endpoint URL and includes an HEC token for authentication. Note that this plugin is not an official plugin and may not work with the latest version of Logstash.
+
 It is fully free and fully open source. The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
+
+## Example Usage
+
+```
+input {
+  file {
+    path => "/path/to/logfile.log"
+    start_position => "beginning"
+  }
+}
+
+filter {
+  grok {
+    match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}" }
+  }
+}
+
+output {
+  splunk-raw {
+    url => "https://hec.splunk.com/services/collector"
+    token => "your_splunk_token"
+  }
+}
+```
 
 ## Documentation
 
@@ -49,7 +75,7 @@ bundle exec rspec
 
 - Edit Logstash `Gemfile` and add the local plugin path, for example:
 ```ruby
-gem "logstash-filter-awesome", :path => "/your/local/logstash-filter-awesome"
+gem "logstash-output-splunk-raw", :path => "/your/local/logstash-output-splunk-raw"
 ```
 - Install plugin
 ```sh
@@ -67,11 +93,11 @@ You can use the same **2.1** method to run your plugin in an installed Logstash 
 
 - Build your plugin gem
 ```sh
-gem build logstash-filter-awesome.gemspec
+gem build logstash-output-splunk-raw.gemspec
 ```
 - Install the plugin from the Logstash home
 ```sh
-bin/logstash-plugin install /your/local/plugin/logstash-filter-awesome.gem
+bin/logstash-plugin install /your/local/plugin/logstash-output-splunk-raw.gem
 ```
 - Start Logstash and proceed to test the plugin
 
