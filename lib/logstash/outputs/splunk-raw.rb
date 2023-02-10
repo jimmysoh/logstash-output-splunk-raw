@@ -22,20 +22,24 @@ class LogStash::Outputs::SplunkRaw < LogStash::Outputs::Base
   public
   def receive(event)
     # Construct the HEC request
-    uri = URI.parse(@url)
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    request = Net::HTTP::Post.new(uri.request_uri)
-    request["Authorization"] = "Splunk #{@token}"
-    request["Content-Type"] = "text/plain"
-    request.body = event.get("message")
+    begin
+      uri = URI.parse(@url)
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      request = Net::HTTP::Post.new(uri.request_uri)
+      request["Authorization"] = "Splunk #{@token}"
+      request["Content-Type"] = "text/plain"
+      request.body = event.get("message")
 
-    # Send the HEC request
-    response = http.request(request)
+      # Send the HEC request
+      response = http.request(request)
 
-    # Check the response status code
-    if response.code != "200"
-      @logger.error("Failed to send event to Splunk HEC, response code: #{response.code}")
+      # Check the response status code
+      if response.code != "200"
+        @logger.error("Failed to send event to Splunk HEC, response code: #{response.code}")
+      end
+    rescue => e
+      @logger.error("Failed to send event to Splunk HEC: #{e}")
     end
   end # def receive
 
